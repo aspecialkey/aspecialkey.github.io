@@ -1,5 +1,5 @@
 const DIRECTION = {LEFT: "left", RIGHT: "right"};
-const ANGLESTEP = 10;
+const ANGLESTEP = 5;
 
 var angle = 0;
 var autoRotate = true;
@@ -14,7 +14,7 @@ window.onload = function () {
 
     setInterval(function () {
         if (autoRotate) rotateImage(direction);
-    }, 200);
+    }, 130);
 
     // document.getElementById("textDiv").style.visibility = "visible";
 
