@@ -1,0 +1,19 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+body {
+    /*overflow: hidden;*/
+    background-color: black;
+    color: white;
+}
+
+div{
+    display: inline-block;
+}
+
+div p{
+    font-family: 'Barlow', sans-serif;
+    font-size: 25pt;
+}
+
