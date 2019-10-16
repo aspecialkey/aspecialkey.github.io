@@ -10,10 +10,12 @@ body {
 
 div{
     display: inline-block;
+    visibility: hidden;
 }
 
 div p{
     font-family: 'Barlow', sans-serif;
-    font-size: 25pt;
+    font-size: 2em;
 }
+
 

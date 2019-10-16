@@ -10,11 +10,16 @@ window.onload = function () {
 
 
     cacheImages();
+    updateImgElement();
 
     setInterval(function () {
         if (autoRotate) rotateImage(direction);
     }, 200);
 
+    // document.getElementById("textDiv").style.visibility = "visible";
+
+    document.getElementsByTagName("div")[0].style.visibility = "visible";
+    document.getElementsByTagName("div")[1].style.visibility = "visible";
     animateFire();
 
 };
@@ -81,7 +86,7 @@ function animateFire() {
     setInterval(function () {
         let img = document.getElementById("feuerImage");
         img.src = "/ea1/img/feuer" + firePos++ +".png";
-        if(firePos == 18) firePos = 0;
+        if(firePos === 18) firePos = 0;
 
     }, 150);
 }
