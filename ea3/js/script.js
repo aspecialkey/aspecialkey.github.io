@@ -353,8 +353,15 @@ const BERLIN_GPS = new Float32Array([
     13.088, 52.42
 ]);
 
-
 window.onload = function () {
+
+    let vert = convertGPStoVertices(BERLIN_GPS);
+    let points = convertVerticesToPoints(vert);
+    let delaunay = Delaunator.from(points);
+
+    // console.log("triangles: " + delaunay.triangles)
+    console.dir(delaunay.triangles);
+
 
     let canvas = document.getElementById("canvas");
     // canvas.width = window.innerWidth;
@@ -373,8 +380,9 @@ window.onload = function () {
 
 
     // Compile a vertex shader
-    let vsSource = 'attribute vec2 pos;' +
-        'void main(){gl_Position = vec4(pos * 0.3 -1.2, 0, 1); }';
+    let vsSource = 'attribute vec3 pos;' +
+        // 'void main(){gl_Position = vec4(pos * 0.3 -1.2, 0, 1); }';
+        'void main(){gl_Position = vec4(pos * 0.3 -1.2 , 1.0); }';
     let vs = gl.createShader(gl.VERTEX_SHADER);
     gl.shaderSource(vs, vsSource);
     gl.compileShader(vs);
@@ -393,39 +401,42 @@ window.onload = function () {
     gl.useProgram(prog);
 
     // Load vertex data into a buffer
-    let vertices = getVertices(BERLIN_GPS);
+    let vertices = convertTrianglesToVertices(delaunay.triangles, points);
+    // let vertices = (delaunay.coords);
+
+    console.dir(vertices);
+
     let vbo = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
     gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
+    // // Setup index buffer object.
+    // let indices = delaunay.triangles;
+    // let ibo = gl.createBuffer();
+    // gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
+    // gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+    // ibo.numerOfEmements = indices.length;
+
+
     // Bind vertex buffer to attribute variable
     let posAttrib = gl.getAttribLocation(prog, 'pos');
-    gl.vertexAttribPointer(posAttrib, 2, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(posAttrib, 3, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(posAttrib);
-
-    // Setup index buffer object.
-    let indices = getIndices(vertices);
-    console.log("vertices: " + vertices);
-    let ibo = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
-    ibo.numerOfEmements = indices.length;
-
-
-
 
 
     // Clear framebuffer and render primitives
     gl.clear(gl.COLOR_BUFFER_BIT);
    // gl.drawArrays(gl.LINE_LOOP, 0, vertices.length/2);
-    gl.drawElements(gl.TRIANGLES, ibo.numerOfEmements, gl.UNSIGNED_SHORT, 0);
+   //  gl.drawElements(gl.TRIANGLES, ibo.numerOfEmements, gl.UNSIGNED_SHORT, 0);
+    gl.drawArrays(gl.TRIANGLES,  0, vertices.length);
+    // gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
 
 
 };
 
 function convertGPStoVertices(gpsDataArray) {
 
-    let vertices = new Float32Array(gpsDataArray.length);
+    let vertices = new Float32Array(gpsDataArray.length +2);
     gpsDataArray.forEach(function(item, index) {
 
         let string = (index % 2 === 0) ? convertLon(item).toString() : convertLat(item).toString();
@@ -437,65 +448,63 @@ function convertGPStoVertices(gpsDataArray) {
         // console.log(vertices[index]);
     });
 
+    console.log(vertices.length);
+    let center = getCenterCoordinate(vertices);
+
+    console.dir(center);
+    vertices[vertices.length-2] =  center[0];
+    vertices[vertices.length-1] =  center[1];
+
     return vertices;
 }
 
 
-function getVertices(gpsDataArray) {
+function convertVerticesToPoints(verticesArray) {
 
-    let verticesFromGPS = convertGPStoVertices(gpsDataArray);
-    let center = getCenterCoordinate(verticesFromGPS);
+    let result =[];
 
-    let result = new Float32Array(verticesFromGPS.length + center.length);
-
-    let j = 0;
-    for(j; j < center.length; j++){
-        result[j] = center[j];
+    for (let i = 0; i < verticesArray.length; i+=2){
+        result.push([verticesArray[i], verticesArray[i + 1]]);
     }
 
-    for(let i = 0; i < verticesFromGPS.length; i++){
-        result[j++] = verticesFromGPS[i];
-    }
-
-   // result.forEach(function(item) {console.log(item)});
     return result;
 }
 
-// returns indices with first index is centerpoint of polygon
-function getIndices(vertices){
-    let indices = new Uint16Array(vertices.length);
+function convertTrianglesToVertices(triangles, points) {
 
-    let j = 0;
-    for(let i = 1; i < vertices.length; i += 2){
-        indices[j++] = 0;
-        indices[j++] = i;
-        indices[j++] = i+1;
+    let vertices = new Float32Array(triangles.length*2);
+
+    console.dir(points);
+
+    for (let i = 0; i < triangles.length; i ++) {
+        vertices[i*2] =  points[triangles[i]][0];
+        vertices[i*2+1] =  points[triangles[i]][1];
     }
 
-    return indices;
+    return vertices;
 }
 
-function getCenterCoordinate(gpsDataArray) {
+function getCenterCoordinate(dataArray) {
 
     let maxX = 0;
     let maxY = 0;
     let minX = Number.MAX_VALUE;
     let minY = Number.MAX_VALUE;
 
-    for(let i = 0; i < gpsDataArray.length; i += 2){
-        if(gpsDataArray[i] >  maxX)  maxX = gpsDataArray[i];
+    for(let i = 0; i < dataArray.length; i += 2){
+        if(dataArray[i] >  maxX)  maxX = dataArray[i];
     }
 
-    for(let i = 0; i < gpsDataArray.length; i += 2){
-        if(gpsDataArray[i] <  minX)  minX = gpsDataArray[i];
+    for(let i = 0; i < dataArray.length; i += 2){
+        if(dataArray[i] <  minX)  minX = dataArray[i];
     }
 
-    for(let i = 1; i < gpsDataArray.length; i += 2){
-        if(gpsDataArray[i] >  maxY)  maxY = gpsDataArray[i];
+    for(let i = 1; i < dataArray.length; i += 2){
+        if(dataArray[i] >  maxY)  maxY = dataArray[i];
     }
 
-    for(let i = 1; i < gpsDataArray.length; i += 2){
-        if(gpsDataArray[i] <  minY)  minY = gpsDataArray[i];
+    for(let i = 1; i < dataArray.length; i += 2){
+        if(dataArray[i] <  minY)  minY = dataArray[i];
     }
 
 
