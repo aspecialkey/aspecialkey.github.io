@@ -355,14 +355,6 @@ const BERLIN_GPS = new Float32Array([
 
 window.onload = function () {
 
-    let vert = convertGPStoVertices(BERLIN_GPS);
-    let points = convertVerticesToPoints(vert);
-    let delaunay = Delaunator.from(points);
-
-    // console.log("triangles: " + delaunay.triangles)
-    console.dir(delaunay.triangles);
-
-
     let canvas = document.getElementById("canvas");
     // canvas.width = window.innerWidth;
     // canvas.height = window.innerHeight;
@@ -380,9 +372,9 @@ window.onload = function () {
 
 
     // Compile a vertex shader
-    let vsSource = 'attribute vec3 pos;' +
-        // 'void main(){gl_Position = vec4(pos * 0.3 -1.2, 0, 1); }';
-        'void main(){gl_Position = vec4(pos * 0.3 -1.2 , 1.0); }';
+    let vsSource = 'attribute vec2 pos;' +
+        'void main(){gl_Position = vec4(pos * 0.3 -1.2, 0, 1); }';
+        // 'void main(){gl_Position = vec4(pos * 0.3 -1.2 , 1.0); }';
     let vs = gl.createShader(gl.VERTEX_SHADER);
     gl.shaderSource(vs, vsSource);
     gl.compileShader(vs);
@@ -401,38 +393,39 @@ window.onload = function () {
     gl.useProgram(prog);
 
     // Load vertex data into a buffer
-    let vertices = convertTrianglesToVertices(delaunay.triangles, points);
-    // let vertices = (delaunay.coords);
-
-    console.dir(vertices);
-
+    let vertices = convertGPStoVertices(BERLIN_GPS);
     let vbo = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
     gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
     // // Setup index buffer object.
-    // let indices = delaunay.triangles;
-    // let ibo = gl.createBuffer();
-    // gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
-    // gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
-    // ibo.numerOfEmements = indices.length;
+    let indices = toUint16Array(earcut(vertices));
+    let ibo = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+    ibo.numerOfEmements = indices.length;
 
 
     // Bind vertex buffer to attribute variable
     let posAttrib = gl.getAttribLocation(prog, 'pos');
-    gl.vertexAttribPointer(posAttrib, 3, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(posAttrib, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(posAttrib);
 
 
     // Clear framebuffer and render primitives
     gl.clear(gl.COLOR_BUFFER_BIT);
-   // gl.drawArrays(gl.LINE_LOOP, 0, vertices.length/2);
-   //  gl.drawElements(gl.TRIANGLES, ibo.numerOfEmements, gl.UNSIGNED_SHORT, 0);
-    gl.drawArrays(gl.TRIANGLES,  0, vertices.length);
-    // gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+    gl.drawElements(gl.TRIANGLES, ibo.numerOfEmements , gl.UNSIGNED_SHORT,0);
 
 
 };
+
+function toUint16Array (array) {
+    let result = new Uint16Array(array.length);
+    array.forEach(function(item, index) {
+        result[index] = item;
+    });
+    return result;
+}
 
 function convertGPStoVertices(gpsDataArray) {
 
@@ -444,71 +437,9 @@ function convertGPStoVertices(gpsDataArray) {
 
         vertices[index] = (parseFloat(string) / 100);
         if (vertices[index] > 6) vertices[index] -= 5;
-
-        // console.log(vertices[index]);
     });
 
-    console.log(vertices.length);
-    let center = getCenterCoordinate(vertices);
-
-    console.dir(center);
-    vertices[vertices.length-2] =  center[0];
-    vertices[vertices.length-1] =  center[1];
-
     return vertices;
-}
-
-
-function convertVerticesToPoints(verticesArray) {
-
-    let result =[];
-
-    for (let i = 0; i < verticesArray.length; i+=2){
-        result.push([verticesArray[i], verticesArray[i + 1]]);
-    }
-
-    return result;
-}
-
-function convertTrianglesToVertices(triangles, points) {
-
-    let vertices = new Float32Array(triangles.length*2);
-
-    console.dir(points);
-
-    for (let i = 0; i < triangles.length; i ++) {
-        vertices[i*2] =  points[triangles[i]][0];
-        vertices[i*2+1] =  points[triangles[i]][1];
-    }
-
-    return vertices;
-}
-
-function getCenterCoordinate(dataArray) {
-
-    let maxX = 0;
-    let maxY = 0;
-    let minX = Number.MAX_VALUE;
-    let minY = Number.MAX_VALUE;
-
-    for(let i = 0; i < dataArray.length; i += 2){
-        if(dataArray[i] >  maxX)  maxX = dataArray[i];
-    }
-
-    for(let i = 0; i < dataArray.length; i += 2){
-        if(dataArray[i] <  minX)  minX = dataArray[i];
-    }
-
-    for(let i = 1; i < dataArray.length; i += 2){
-        if(dataArray[i] >  maxY)  maxY = dataArray[i];
-    }
-
-    for(let i = 1; i < dataArray.length; i += 2){
-        if(dataArray[i] <  minY)  minY = dataArray[i];
-    }
-
-
-    return [(maxX + minX)/2, (maxY + minY)/2];
 }
 
 
