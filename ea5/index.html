@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="de">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="description" content="">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<title>GVT - Aufgabe 5</title>
+
+		<script src="ext/gl-matrix.js"></script>
+		<script src="torus.js"></script>
+		<script src="app.js"></script>
+		<script src="kegel.js"></script>
+		<script src="zylinder.js"></script>
+		<script src="kugel.js"></script>
+		<script type="x-shader/x-vertex" id="vertexshader">
+			attribute vec3 aPosition;
+			attribute vec3 aNormal;
+
+			uniform mat4 uPMatrix;
+			uniform mat4 uMVMatrix;
+
+			varying vec4 vColor;
+
+			void main(){
+				gl_Position = uPMatrix * uMVMatrix * vec4(aPosition, 1.0);
+	
+				vColor = vec4(aNormal.x, aNormal.y, aNormal.z, 1.0);
+				vColor = (vColor + 1.0) / 2.0;
+			}
+		</script>
+		<script type="x-shader/x-fragment" id="fragmentshader">
+			precision mediump float;
+			varying vec4 vColor;
+
+			void main() {
+				gl_FragColor = vColor;
+			}
+		</script>
+	</head>
+	<body onload="app.start()">
+		<canvas id="canvas" width="600" height="600"></canvas>
+		<div>
+			<p>	<strong>Interaktion:</strong> Bewegung der Kamera über die Pfeiltasten (oder über die Tasten WASD). </p>
+			<label for="rekursion">Rekursionstiefe:</label>
+			<input type="number" id="rekursion" value="0" min="0" max="5" onchange="app.start()">
+		</div>
+	</body>
+</html>
