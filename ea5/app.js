@@ -1,7 +1,5 @@
 var app = ( function() {
 
-
-	let counter = 1;
 	var gl;
 
 	// The shader program object is also used to
@@ -340,10 +338,6 @@ var app = ( function() {
 		camera.eye[z] = camera.center[z];
 		// camera.eye[x] += camera.distance * Math.sin(camera.zAngle);
 		// camera.eye[z] += camera.distance * Math.cos(camera.zAngle);
-
-		// camera.eye[x] += camera.distance * Math.sin(camera.xAngle) * Math.cos(camera.yAngle);
-		// camera.eye[y] += camera.distance * Math.sin(camera.yAngle);
-		// camera.eye[z] += camera.distance * Math.cos(camera.xAngle) * Math.cos(camera.yAngle);
 
 		camera.eye[x] += camera.distance * Math.sin(camera.xAngle) * Math.cos(camera.yAngle);
 		camera.eye[y] += camera.distance * Math.sin(camera.yAngle) ;
