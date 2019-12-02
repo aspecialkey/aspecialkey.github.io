@@ -1,6 +1,7 @@
 var app = ( function() {
 
 
+	let counter = 1;
 	var gl;
 
 	// The shader program object is also used to
@@ -70,7 +71,7 @@ var app = ( function() {
 	 * be in render function.
 	 */
 	function initPipline() {
-		gl.clearColor(.95, .95, .95, 1);
+		gl.clearColor(1, 1, 1, 1);
 
 		// Backface culling.
 		gl.frontFace(gl.CCW);
@@ -217,6 +218,8 @@ var app = ( function() {
 		var deltaTranslate = 0.05;
 
 		window.onkeydown = function (evt) {
+			let val;
+
 
 			switch (evt.code) {
 				case('KeyO'):
@@ -248,17 +251,30 @@ var app = ( function() {
 
 				case('KeyW'):
 				case('ArrowUp'):
-					// camera.yAngle += deltaRotate;
-					// camera.yAngle += (camera.yAngle + deltaRotate) < (Math.PI/2) ? deltaRotate : deltaRotate* -1;
-					if(camera.yAngle + deltaRotate < Math.PI/2){
-
+					val = (Math.round(Math.PI/2 *1000) / 1000) / (Math.round(camera.yAngle /counter * 1000) / 1000)   ;
+					if (Number.isInteger(val)) {
+						counter++;
+						if (counter % 2 === 0) {
+							camera.up[1] *= -1;
+						}
 					}
 					camera.yAngle += deltaRotate;
-					console.log("camera.yAngle: " +camera.yAngle);
-
 					break;
 				case('KeyS'):
 				case('ArrowDown'):
+
+					val = (Math.round(Math.PI/2 *1000) / 1000) / (Math.round(camera.yAngle /counter * 1000) / 1000)   ;
+					if (Number.isInteger(val)) {
+						counter--;
+						if (counter % 2 === 0) {
+							console.log("heureka");
+							camera.up[1] *= -1;
+						}
+					}
+
+					console.log("counter: " + counter);
+					console.log("val: " + val);
+
 					camera.yAngle -= deltaRotate;
 
 					break;
@@ -269,6 +285,8 @@ var app = ( function() {
 
 
 			}
+
+			console.log("camera y: " + camera.yAngle);
 			// Render the scene again on any key pressed.
 			render();
 
