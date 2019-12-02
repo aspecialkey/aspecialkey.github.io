@@ -251,30 +251,41 @@ var app = ( function() {
 
 				case('KeyW'):
 				case('ArrowUp'):
-					val = (Math.round(Math.PI/2 *1000) / 1000) / (Math.round(camera.yAngle /counter * 1000) / 1000)   ;
-					if (Number.isInteger(val)) {
-						counter++;
-						if (counter % 2 === 0) {
-							camera.up[1] *= -1;
-						}
+					//macht eigetlich, was es soll
+					// val = (Math.round(Math.PI/2 *1000) / 1000) / (Math.round(camera.yAngle /counter * 1000) / 1000)   ;
+					// if (Number.isInteger(val)) {
+					// 	counter++;
+					// 	if (counter % 2 === 0) {
+					// 		camera.up[1] *= -1;
+					// 	}
+					// }
+
+					if (camera.yAngle + deltaRotate < Math.PI/2) {
+						camera.up = [0, 1, 0];
 					}
+					if (camera.yAngle + deltaRotate > Math.PI/2 && camera.yAngle < Math.PI * 1.5) {
+					camera.up = [0, -1, 0];
+					}
+					if (camera.yAngle + deltaRotate > Math.PI * 1.5 && camera.yAngle < 2 * Math.PI) {
+						camera.up = [0, 1, 0];
+					}
+					if(camera.yAngle + deltaRotate  > 2 * Math.PI){
+						camera.yAngle = 0;
+					}
+
 					camera.yAngle += deltaRotate;
 					break;
 				case('KeyS'):
 				case('ArrowDown'):
-
-					val = (Math.round(Math.PI/2 *1000) / 1000) / (Math.round(camera.yAngle /counter * 1000) / 1000)   ;
-					if (Number.isInteger(val)) {
-						counter--;
-						if (counter % 2 === 0) {
-							console.log("heureka");
-							camera.up[1] *= -1;
+					if (-camera.yAngle + deltaRotate > Math.PI/2) {
+						camera.up = [0, -1, 0];
+						if (-camera.yAngle + deltaRotate > Math.PI * 1.5) {
+							camera.up = [0, 1, 0];
+						}
+						if (-camera.yAngle > 2*Math.PI) {
+							camera.yAngle = 0;
 						}
 					}
-
-					console.log("counter: " + counter);
-					console.log("val: " + val);
-
 					camera.yAngle -= deltaRotate;
 
 					break;
@@ -283,10 +294,7 @@ var app = ( function() {
 					camera.xAngle -= deltaRotate;
 					break;
 
-
 			}
-
-			console.log("camera y: " + camera.yAngle);
 			// Render the scene again on any key pressed.
 			render();
 
