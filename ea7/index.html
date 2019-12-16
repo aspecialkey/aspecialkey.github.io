@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>GVT - Aufgabe 7</title>
+
+		<script src="ext/gl-matrix.js"></script>
+		<script src="GVT_Src_vertexData_plane.js"></script>
+		<script src="app.js"></script>
+		<script src="torus.js"></script>
+		<script src="sphere.js"></script>
+		<script src="kegel.js"></script>
+		<script src="zylinder.js"></script>
+		<script type="x-shader/x-vertex" id="vertexshader">
+			precision mediump float;
+
+			attribute vec3 aPosition;
+			attribute vec3 aNormal;
+
+			uniform mat4 uPMatrix;
+			uniform mat4 uMVMatrix;
+			uniform mat3 uNMatrix;
+			uniform vec4 uColor;
+
+			varying vec4 vColor;
+
+			void main(){
+				gl_Position = uPMatrix * uMVMatrix * vec4(aPosition, 1.0);
+
+				vec3 tNormal = uNMatrix * aNormal;
+
+				vColor = uColor;
+			}
+		</script>
+
+
+		<script type="x-shader/x-fragment" id="fragmentshader">
+			precision mediump float;
+			varying vec4 vColor;
+			
+			void main() {
+				 //gl_FragColor = vColor;
+				gl_FragColor = vec4(gl_FragCoord.z, gl_FragCoord.z, gl_FragCoord.z, 1.0);
+			}
+		</script>
+	</head>
+	<body onload="app.start()">
+		<canvas id="canvas" width="500" height="500"></canvas>
+		<div style="width: 500px">
+			<strong>Interaktion:</strong>
+			<ul>
+				<li>Bewegung der Kamera über die Pfeiltasten <br/> (oder über die Tasten WASD).</li>
+				<li>Zoom u/U</li>
+			</ul>
+		</div>
+	</body>
+</html>
