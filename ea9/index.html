@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>GVT - Aufgabe 9</title>
+		<script src="ext/gl-matrix.js"></script>
+		<script src="GVT_Src_vertexData_torus.js"></script>
+		<script src="app.js"></script>
+	<script type="x-shader/x-vertex" id="vertexshader">
+			attribute vec3 aPosition;
+			attribute vec3 aNormal;
+			attribute vec2 aTextureCoord;
+
+			uniform mat4 uPMatrix;
+			uniform mat4 uMVMatrix;
+			uniform mat3 uNMatrix;
+
+			varying vec2 vTextureCoord;
+
+			void main(){
+				// Calculte vertex position in eye coordinates.
+				vec4 tPosition = uMVMatrix * vec4(aPosition, 1.0);
+				// Calculate projektion.
+				gl_Position = uPMatrix * tPosition;
+				vec3 tNrmal = normalize(uNMatrix * aNormal);
+				vTextureCoord = aTextureCoord;
+			}
+		</script>
+	<script type="x-shader/x-fragment" id="fragmentshader">
+			precision mediump float;
+			uniform sampler2D uTexture;
+			varying vec2 vTextureCoord;
+
+			void main() {
+				gl_FragColor = texture2D(uTexture, vTextureCoord);
+			}
+		</script>
+	</head>
+	<body onload="app.start()">
+		<canvas id="canvas" width="500" height="500"></canvas>
+		<div style="width: 500px">
+			<p><strong>Interaktion:</strong> wie immer:</p>
+			<ul>
+				<li>Rotate interactiveModel: X/Y/Z</li>
+				<li>Camera move and orbit: C/H/D/V </li>
+			</ul>
+			<p><strong>Material:</strong> selbstgeknippstes Foto (Wallnüsse).</p>
+<!--			<a href="https://pixabay.com/de/photos/tiere-zebra-zebrastreifen-streifen-102483/" >Texture</a>-->
+			<a href="ea9_ext/index.html">Erweiterung</a>
+		</div>
+		</div>
+	</body>
+</html>
